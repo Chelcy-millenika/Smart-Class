@@ -1,129 +1,196 @@
-import 'package:flutter/material.dart' show AlertDialog, BuildContext, Canvas, Colors, Container, CustomPaint, CustomPainter, Dialog, DragEndDetails, DragUpdateDetails, FloatingActionButton, GestureDetector, Icon, IconButton, Icons, MaterialApp, Navigator, Offset, Paint, RenderBox, Scaffold, Size, State, StatefulWidget, StrokeCap, Text, Widget, runApp, showDialog;
-import 'package:flutter/painting.dart';
-import 'package:flutter/src/widgets/basic.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
+import 'dart:ui';
 
-void main() => runApp(new MaterialApp(
-      home: new HomePage(),
-      debugShowCheckedModeBanner: false,
-    ));
+import 'package:flutter/material.dart';
+import 'package:painter2/painter2.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'dart:typed_data';
 
-class HomePage extends StatefulWidget {
-  @override
-  _HomePageState createState() => new _HomePageState();
-}
+void main() => runApp(MyApp());
 
-class _HomePageState extends State<HomePage> {
-  Color color = Colors.black;
-  List<Offset> _points = <Offset>[];
-  Color selectedColor;
-  List<Signature> painterList = [];
-
-  // static const Radius zero = Radius.circular(0.0),
-Future createcolordialog(BuildContext context)
-{
-  return showDialog(context: context,
-  builder:(context){
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100.0)),
-      child: Container(
-        height: 250,
-        width: 500,
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: MaterialColorPicker(
-            onColorChange: (Color color) {
-              selectedColor=color;
-              Navigator.of(context).pop();
-    setState(() {
-      color = selectedColor;
-    painterList
-        .add(Signature(points: _points.toList(), brushColor: color));
-    _points.clear();
-
-
-    });
-            },
-              selectedColor: selectedColor,
-              elevation: 2,
-
-          ),
-        ),
-      )
-    ));
-  });
-}
-
+class MyApp extends StatelessWidget {
+  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      body: SlidingUpPanel(
-          minHeight:500.0,
-        maxHeight: 50.0,
-        color: Colors.cyanAccent[100],
-          panelSnapping:false,
-        borderRadius: BorderRadius.circular(8),
-        panel:IconButton(
-          icon:Icon(Icons.color_lens),
-            onPressed: () {
-              createcolordialog(context);
-            }
-        ),
-        //
-        //),
-          body: new Container(
-          child: new GestureDetector(
-            onPanUpdate: (DragUpdateDetails details) {
-              setState(() {
-                RenderBox object = context.findRenderObject();
-                Offset _localPosition =
-                    object.globalToLocal(details.globalPosition);
-                _points = new List.from(_points)..add(_localPosition);
-              });
-            },
-            onPanEnd: (DragEndDetails details) => _points.add(null),
-            child: new CustomPaint(
-              painter: new Signature(points: _points,brushColor: selectedColor,signatures: painterList),
-              size: Size.infinite,
-            ),
-          ),
-        ),
-      ),
-      floatingActionButton: new FloatingActionButton(
-        backgroundColor: Colors.cyanAccent[400],
-        splashColor: Colors.tealAccent[100],
-        child: new Icon(Icons.clear),
-        onPressed: () => _points.clear(),
-      ),
+    return MaterialApp(
+      home: DrawMe(),
     );
   }
 }
 
-class Signature extends CustomPainter {
-  List<Offset> points;
-  Color brushColor=Colors.teal;
-  List<Signature> signatures;
-  Signature({this.points,this.brushColor,this.signatures=const[]});
+
+class DrawMe extends StatefulWidget {
+  @override
+  _DrawMeState createState() => _DrawMeState();
+}
+
+class _DrawMeState extends State<DrawMe> {
+  bool _finished;
+  PainterController _controller;
+  final count = 0;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    for (Signature painter in signatures) {
-      painter.paint(canvas, size);
-    }
-    Paint paint = new Paint()
-      ..color = brushColor
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = 5.0;
+  void initState() {
+    super.initState();
+    _finished = false;
+    _controller = newController();
+  }
 
-    for (int i = 0; i < points.length - 1; i++) {
-      if (points[i] != null && points[i + 1] != null) {
-        canvas.drawLine(points[i], points[i + 1], paint);
-      }}
+  PainterController newController() {
+    PainterController controller = PainterController();
+    controller.thickness = 10.0;
+    controller.backgroundColor = Colors.lightBlueAccent.withOpacity(0.1);
+    return controller;
   }
 
   @override
-  bool shouldRepaint(Signature oldDelegate) => oldDelegate.points != points;
+  Widget build(BuildContext context) {
+    List<Widget> actions;
+    if (_finished) {
+      actions = <Widget>[
+        IconButton(
+          icon: Icon(Icons.content_copy),
+          tooltip: 'New Painting',
+          onPressed: () => setState(() {
+            _finished = false;
+            _controller = newController();
+          }),
+        ),
+      ];
+    } else {
+      actions = <Widget>[
+        IconButton(
+          icon: Icon(Icons.undo),
+          tooltip: 'Undo',
+          onPressed: () {
+            if (_controller.canUndo) _controller.undo();
+          },
+        ),
+        IconButton(
+          icon: Icon(Icons.redo),
+          tooltip: 'Redo',
+          onPressed: () {
+            if (_controller.canRedo) _controller.redo();
+          },
+        ),
+        IconButton(
+          icon: Icon(Icons.delete),
+          tooltip: 'Clear',
+          onPressed: () => _controller.clear(),
+        ),
+        IconButton(
+            icon: Icon(Icons.check),
+            onPressed: () async {
+              setState(() {
+                _finished = true;
+              });
+              Uint8List bytes = await _controller.exportAsPNGBytes();
+              Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (BuildContext context) {
+                return Scaffold(
+                  appBar: AppBar(
+                    backgroundColor: Colors.white10,
+                    title: Text('View your image'),
+                  ),
+                  body: Container(
+                    child: Image.memory(bytes),
+                  ),
+                );
+              }));
+            }),
+      ];
+    }
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white10,
+        title: Text('Draw Me'),
+        actions: actions,
+        bottom: PreferredSize(
+          child: DrawBar(_controller),
+          preferredSize: Size(MediaQuery.of(context).size.width, 30.0),
+        ),
+      ),
+      body: Center(
+          child: AspectRatio(aspectRatio: 1.0, child: Painter(_controller))),
+    );
+  }
 }
 
+class DrawBar extends StatelessWidget {
+  final PainterController _controller;
+  DrawBar(this._controller);
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Flexible(child:
+        StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Container(
+                  child: Slider(
+                    value: _controller.thickness,
+                    onChanged: (value) => setState(() {
+                      _controller.thickness = value;
+                    }),
+                    min: 1.0,
+                    max: 20.0,
+                    activeColor: Colors.white,
+                  ));
+            })),
+        ColorPickerButton(_controller),
+      ],
+    );
+  }
+}
+
+class ColorPickerButton extends StatefulWidget {
+  final PainterController _controller;
+
+  ColorPickerButton(this._controller);
+
+  @override
+  _ColorPickerButtonState createState() => new _ColorPickerButtonState();
+}
+
+class _ColorPickerButtonState extends State<ColorPickerButton> {
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: Icon(_iconData, color: _color),
+      tooltip: 'Change draw color',
+      onPressed: () => _pickColor(),
+    );
+  }
+
+  void _pickColor() {
+    Color pickerColor = _color;
+    Navigator.of(context)
+        .push(MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (BuildContext context) {
+          return Scaffold(
+              appBar: AppBar(
+                title: Text('Pick color'),
+              ),
+              body: Container(
+                  alignment: Alignment.center,
+                  child: ColorPicker(
+                    pickerColor: pickerColor,
+                    onColorChanged: (Color c) => pickerColor = c,
+                  )));
+        }))
+        .then((_) {
+      setState(() {
+        _color = pickerColor;
+      });
+    });
+  }
+
+  Color get _color => widget._controller.drawColor;
+
+  IconData get _iconData => Icons.brush;
+
+  set _color(Color color) {
+    widget._controller.drawColor = color;
+  }
+}

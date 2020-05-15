@@ -4,6 +4,9 @@ description: A new Flutter project.
 dependencies:
   flutter_material_color_picker: ^1.0.5
   sliding_up_panel: ^1.0.2
+  painter2: ^1.0.1
+  flutter_colorpicker: ^0.3.3
+
   flutter:
     sdk: flutter
 
