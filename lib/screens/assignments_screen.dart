@@ -26,9 +26,6 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
           backgroundColor:Colors.deepOrange[900],
         onPressed: ()async{
           inputList=inputDialog(context);
-        //  Dialog(  child: Column(children:<Widget>[
-            //  Text('New Assignment'),Text('Send To'),TextField(),Text('Assignment Title'),TextField(),Text('Assignment Description'),TextField(),Text('Interface Controlled?'),
-          //  ]),);
         },
       ),
           body:Container(
