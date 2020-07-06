@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "969524247531",
+    "firebase_url": "https://smart-class-86919.firebaseio.com",
+    "project_id": "smart-class-86919",
+    "storage_bucket": "smart-class-86919.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:969524247531:android:f66aca172da282f26f37ae",
+        "android_client_info": {
+          "package_name": "com.smartclass.fluttersignature"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "969524247531-7de8m5hm3r6rdno1n1o9g33aq56crgqf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCr3OXgW0u8nFOfR5phRKnFn_SO0nTt48A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "969524247531-7de8m5hm3r6rdno1n1o9g33aq56crgqf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
