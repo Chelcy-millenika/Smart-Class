@@ -8,7 +8,7 @@ class AssignmentScreen extends StatefulWidget {
 }
 
 class _AssignmentScreenState extends State<AssignmentScreen> {
-  Future<String> inputList;
+  List<String> inputList;
   bool _radioValue;
    List<Assignment>assignmentList=[Assignment(title:'SubjectName1',
     description:'Assignment Description'),Assignment(title:'SubjectName2',
@@ -24,8 +24,11 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
       floatingActionButton:FloatingActionButton(
         child:Icon(Icons.add),
           backgroundColor:Colors.deepOrange[900],
-        onPressed: ()async{
-          inputList=inputDialog(context);
+        onPressed: (){
+          setState(() async{
+          inputList=await inputDialog(context);
+          assignmentList.add(Assignment(title: inputList[0],description:inputList[1] ));
+          });
         },
       ),
           body:Container(
@@ -34,46 +37,50 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
     ),
     );
   }
-   Future<String> inputDialog(BuildContext context) async {
-     String teamName = '';
-     return showDialog<String>(
+   Future<List<String>> inputDialog(BuildContext context) async {
+     List<String> inputs = [];
+     return showDialog<List<String>>(
        context: context,
        barrierDismissible: false, // dialog is dismissible with a tap on the barrier
        builder: (BuildContext context) {
          return AlertDialog(
            title: Text('New Assignment'),
-           content: Column(
-             children: <Widget>[
-               Expanded(
-                   child: TextField(
-                     autofocus: true,
-                     decoration: InputDecoration(
-                         labelText: 'Title', hintText: 'Subject1'),
-                     onChanged: (value) {
-                       teamName = value;
-                     },
-                   )), Expanded(
-                   child: TextField(
-                     autofocus: true,
-                     decoration: InputDecoration(
-                         labelText: 'Description', hintText: 'Write an essay on lockdown'),
-                     onChanged: (value) {
-                       teamName = value;
-                     },
-                   )), Expanded(
-                   child: TextField(
-                     autofocus: true,
-                     decoration: InputDecoration(
-                         labelText: 'Send To', hintText: 'student@gmail.com'),
-                     onChanged: (value) {
-                       teamName = value;
-                     },
-                   )), Expanded(
-                   child: Text('Interface Controlled?'),),
-                Row(
+           content: StatefulBuilder(
+           builder: (BuildContext context, StateSetter setState) {
+             return Column(
+                 children: <Widget>[
+                   Expanded(
+                       child: TextField(
+                         autofocus: true,
+                         decoration: InputDecoration(
+                             labelText: 'Title', hintText: 'Subject1'),
+                         onChanged: (value) {
+                           inputs.add(value);
+                         },
+                       )), Expanded(
+                       child: TextField(
+                         autofocus: true,
+                         decoration: InputDecoration(
+                             labelText: 'Description',
+                             hintText: 'Write an essay on lockdown'),
+                         onChanged: (value) {
+                           inputs.add(value);
+                         },
+                       )), Expanded(
+                       child: TextField(
+                         autofocus: true,
+                         decoration: InputDecoration(
+                             labelText: 'Send To',
+                             hintText: 'student@gmail.com'),
+                         onChanged: (value) {
+                           inputs.add(value);
+                         },
+                       )), Expanded(
+                     child: Text('Interface Controlled?'),),
+                   Row(
                      mainAxisAlignment: MainAxisAlignment.center,
-                       children: <Widget>[
-                        Radio(
+                     children: <Widget>[
+                       Radio(
                            value: true,
                            groupValue: _radioValue,
                            onChanged: (bool value) {
@@ -81,32 +88,34 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
                                _radioValue = value;
                              },);
                            }
-                             ),
-                         Text(
-                               'Yes',
-                                style: new TextStyle(fontSize: 16.0),
-                                ),
-                           Radio(
-                               value: false,
-                               groupValue: _radioValue,
-                               onChanged: (bool value) {
-                                 setState(() {
-                                   _radioValue = value;
-                                 },);
-                               },
-                               ),
-                              Text(
-                                 'No',
-                                 style: new TextStyle(fontSize: 16.0,),),
-        ],)
+                       ),
+                       Text(
+                         'Yes',
+                         style: new TextStyle(fontSize: 16.0),
+                       ),
+                       Radio(
+                         value: false,
+                         groupValue: _radioValue,
+                         onChanged: (bool value) {
+                           setState(() {
+                             _radioValue = value;
+                           },);
+                         },
+                       ),
+                       Text(
+                         'No',
+                         style: new TextStyle(fontSize: 16.0,),),
+                     ],)
 
-             ]
+                 ]
+             );
+           }
            ),
            actions: <Widget>[
              FlatButton(
                child: Text('Ok'),
                onPressed: () {
-                 Navigator.of(context).pop(teamName);
+                 Navigator.of(context).pop(inputs);
                },
              ),
            ],
